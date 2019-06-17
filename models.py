@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import scoped_session, sessionmaker
-from .mysql_connection import db
-from . import db_configs
+from .extensions import db
 
 class Notes(db.Model):
     __tablename__ = 'notes'

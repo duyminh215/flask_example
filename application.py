@@ -1,36 +1,53 @@
 from flask import Flask
 from flask import render_template
-import sqlalchemy
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from flask_sqlalchemy import SQLAlchemy
-from . import db_configs
-from . import mysql_connection
 import json
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.orm import scoped_session, sessionmaker
+from .settings import DevelopmentConfig
+from .settings import config
+from .extensions import db
+from .models import Notes
 from . import utils
 
-app = Flask(__name__)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://' + db_configs.user + ':' + db_configs.password + '@' + db_configs.host + ":" + db_configs.port + '/' + db_configs.db_name
-db = SQLAlchemy(app)
+DEFAULT_APP_NAME = 'app'
 
-class Notes(db.Model):
-    __tablename__ = 'notes'
-    id = db.Column(Integer, primary_key=True)
-    content = db.Column(String(255), unique=True)
-    title = db.Column(String(255), unique=True)
-    created_at = db.Column(DateTime())
-    updated_at = db.Column(DateTime())
+def create_app(config=None):
+    app = Flask(DEFAULT_APP_NAME)
 
-    def __init__(self):
-        self.title = ""
-        self.content = ""
+    configure_app(app, config)
+    configure_extensions(app)
 
-    def __repr__(self):
-        return '<Note %r>' % (self.title)
+    configure_logging(app)
+
+    app.debug_logger.debug(' * Runing in -----* ')
+
+    return app
+
+def configure_app(app, config):
+    if not config:
+        config = DevelopmentConfig
+
+    app.config.from_object(config)
+
+def configure_extensions(app):
+
+    db.init_app(app)
+
+
+def configure_logging(app):
+
+    import logging
+    from logging import StreamHandler
+
+    class DebugHandler(StreamHandler):
+        def emit(x, record):
+            StreamHandler.emit(x, record) if app.debug else None
+
+    logger = logging.getLogger('app')
+    logger.addHandler(DebugHandler())
+    logger.setLevel(logging.DEBUG)
+
+    app.debug_logger = logger
+
+app = create_app(config['development'])
 
 @app.route('/hello/')
 @app.route('/hello/<name>')
