@@ -5,9 +5,8 @@ import json
 from .settings import DevelopmentConfig
 from .settings import config
 from .extensions import db
-from .models import Notes
-from . import utils
 from .controllers.AccountController import account_api
+from .controllers.NoteController import note_api
 
 DEFAULT_APP_NAME = 'app'
 
@@ -16,7 +15,7 @@ def create_app(config=None):
 
     configure_app(app, config)
     configure_extensions(app)
-
+    configure_blueprints(app)
     configure_logging(app)
 
     app.debug_logger.debug(' * Runing in -----* ')
@@ -49,19 +48,11 @@ def configure_logging(app):
 
     app.debug_logger = logger
 
+def configure_blueprints(app):
+    app.register_blueprint(account_api)
+    app.register_blueprint(note_api)
+
+
 app = create_app(config['development'])
-app.register_blueprint(account_api)
-
-@app.route('/hello/')
-@app.route('/hello/<name>')
-def hello(name=None):
-    note_results = Notes.query.all()
-    notes = []
-    for row in note_results:
-        notes.append(utils.row2dict(row))
-    print(json.dumps(notes))
-    return json.dumps(notes)
-
-
 if __name__ == "__main__":
     app.run()
