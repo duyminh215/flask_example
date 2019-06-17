@@ -3,10 +3,12 @@ from flask import request, session
 import json
 from ..models import Notes
 from .. import utils
+from ..utils import return_json
 
 note_api = Blueprint('note_api', __name__)
 
 @note_api.route('/note/all')
+@return_json
 def list_all_note(name=None):
     note_results = Notes.query.all()
     notes = []
