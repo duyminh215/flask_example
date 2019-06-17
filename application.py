@@ -7,6 +7,7 @@ from .settings import config
 from .extensions import db
 from .models import Notes
 from . import utils
+from .controllers.AccountController import account_api
 
 DEFAULT_APP_NAME = 'app'
 
@@ -49,6 +50,7 @@ def configure_logging(app):
     app.debug_logger = logger
 
 app = create_app(config['development'])
+app.register_blueprint(account_api)
 
 @app.route('/hello/')
 @app.route('/hello/<name>')
@@ -61,26 +63,5 @@ def hello(name=None):
     return json.dumps(notes)
 
 
-@app.route('/login/', methods=['POST'])
-def login():
-    json_data = request.json
-    phone = json_data['phone']
-    password = json_data['password']
-
-    if phone == '0981713034' and password == '826dabf6e74e583ffbfccb2c7cab747d':
-        session['phone'] = json_data
-        return 'Bạn đã đăng nhập thành công'
-
-    return json.dumps(json_data)
-
-@app.route('/session/test')
-def test_session():
-    if 'phone' in session:
-        return 'Bạn đã login rồi'
-    return 'Bạn chưa login'
-
-@app.route('/logout')
-def logout():
-    # remove the username from the session if it's there
-    session.pop('phone', None)
-    return 'Bạn đã logout rồi'
+if __name__ == "__main__":
+    app.run()
