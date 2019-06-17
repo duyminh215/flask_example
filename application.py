@@ -1,4 +1,5 @@
 from flask import Flask
+from flask import request, session
 from flask import render_template
 import json
 from .settings import DevelopmentConfig
@@ -59,3 +60,27 @@ def hello(name=None):
     print(json.dumps(notes))
     return json.dumps(notes)
 
+
+@app.route('/login/', methods=['POST'])
+def login():
+    json_data = request.json
+    phone = json_data['phone']
+    password = json_data['password']
+
+    if phone == '0981713034' and password == '826dabf6e74e583ffbfccb2c7cab747d':
+        session['phone'] = json_data
+        return 'Bạn đã đăng nhập thành công'
+
+    return json.dumps(json_data)
+
+@app.route('/session/test')
+def test_session():
+    if 'phone' in session:
+        return 'Bạn đã login rồi'
+    return 'Bạn chưa login'
+
+@app.route('/logout')
+def logout():
+    # remove the username from the session if it's there
+    session.pop('phone', None)
+    return 'Bạn đã logout rồi'
